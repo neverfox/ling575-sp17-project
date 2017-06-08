@@ -10,7 +10,7 @@ from torch.autograd import Variable
 
 from torchtext import data
 
-lang_dict = {'en': 'English'}
+lang_dict = {'en': 'English', 'vi': 'Vietnamese', 'zh': 'Chinese'}
 
 
 def fromCoNLLU(sentence, fields):

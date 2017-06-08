@@ -292,7 +292,7 @@ def try_params(n_iterations, t):
         except:
             loss = np.inf
         if loss == float("-inf"):
-            loss == np.inf
+            loss = np.inf
         best_loss = min(loss, best_loss)
 
     return {'loss': best_loss}

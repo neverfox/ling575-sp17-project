@@ -243,8 +243,15 @@ def train():
 
     try:
         for epoch in np.arange(config.start_epoch, config.epochs + 1):
-            train_epoch(model, optimizer, train_iter, epoch, config)
-            loss, las = val_epoch(model, val_iter, epoch, config)
+            try:
+                train_epoch(model, optimizer, train_iter, epoch, config)
+                loss, las = val_epoch(model, val_iter, epoch, config)
+            except:
+                loss = np.inf
+                las = 0
+            if loss == float("-inf"):
+                loss = np.inf
+                las = 0
             is_best = not best_las or las > best_las
             best_las = max(las, best_las)
             save_checkpoint({
