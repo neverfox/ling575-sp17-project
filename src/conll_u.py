@@ -1,7 +1,7 @@
 import os
+import sys
 from collections import defaultdict
 
-import dropbox
 import numpy as np
 import torch
 from conllu.parser import parse
@@ -70,23 +70,13 @@ class CoNLLU(data.Dataset):
         return len(ex.form)
 
     @classmethod
-    def splits(cls,
-               lang,
-               form_field,
-               lemma_field,
-               pos_field,
-               head_field,
-               deprel_field,
-               dropbox_root='/LING 575 Project Data',
-               **kwargs):
+    def splits(cls, lang, form_field, lemma_field, pos_field, head_field,
+               deprel_field, **kwargs):
         fname_pt = os.path.join('../input', lang + '_splits.pt')
         if os.path.isfile(fname_pt):
             print('Loading splits from', fname_pt)
             train, validation, test = torch.load(fname_pt)
         else:
-            dbx_token = os.environ.get('DROPBOX_TOKEN')
-            dbx = dropbox.Dropbox(dbx_token)
-
             train_fname = os.path.join('ud-treebanks-conll2017',
                                        'UD_' + lang_dict[lang],
                                        lang + '-ud-train.conllu')
@@ -101,28 +91,22 @@ class CoNLLU(data.Dataset):
                 print('Loading training data from', train_fname)
                 train = parse(open(train_fname, 'rb'))
             else:
-                print('Loading training data from Dropbox')
-                train = parse(
-                    dbx.files_download(
-                        os.path.join(dropbox_root, train_fname))[1].text)
+                print('Cannot find any training data')
+                sys.exit()
 
             if os.path.isfile(val_fname):
                 print('Loading validation data from', val_fname)
                 validation = parse(open(val_fname, 'rb'))
             else:
-                print('Loading validation data from Dropbox')
-                validation = parse(
-                    dbx.files_download(os.path.join(dropbox_root, val_fname))[
-                        1].text)
+                print('Cannot find any validation data')
+                sys.exit()
 
             if os.path.isfile(test_fname):
                 print('Loading test data from', test_fname)
                 test = parse(open(test_fname, 'rb'))
             else:
-                print('Loading test data from Dropbox')
-                test = parse(
-                    dbx.files_download(
-                        os.path.join(dropbox_root, test_fname))[1].text)
+                print('Cannot find any test data')
+                sys.exit()
 
             torch.save((train, validation, test), fname_pt)
 
@@ -149,7 +133,6 @@ class CoNLLU(data.Dataset):
               lang,
               batch_size=32,
               device=-1,
-              dropbox_root='/LING 575 Project Data',
               wv_dir='../input',
               wv_type='en',
               wv_dim=100,
@@ -160,15 +143,8 @@ class CoNLLU(data.Dataset):
         HEAD = HeadField()
         DEPREL = data.Field()
 
-        train, val, test = cls.splits(
-            lang,
-            FORM,
-            LEMMA,
-            POS,
-            HEAD,
-            DEPREL,
-            dropbox_root=dropbox_root,
-            **kwargs)
+        train, val, test = cls.splits(lang, FORM, LEMMA, POS, HEAD, DEPREL,
+                                      **kwargs)
 
         FORM.build_vocab(train, wv_dir=wv_dir, wv_type=wv_type, wv_dim=wv_dim)
         LEMMA.build_vocab(train)

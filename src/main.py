@@ -46,14 +46,7 @@ POS = data.Field(init_token='<root>')
 HEAD = HeadField()
 DEPREL = data.Field()
 
-train, val, test = CoNLLU.splits(
-    config.lang,
-    FORM,
-    LEMMA,
-    POS,
-    HEAD,
-    DEPREL,
-    dropbox_root='/LING 575 Project Data')
+train, val, test = CoNLLU.splits(config.lang, FORM, LEMMA, POS, HEAD, DEPREL)
 
 # Build vocabularies
 FORM.build_vocab(
